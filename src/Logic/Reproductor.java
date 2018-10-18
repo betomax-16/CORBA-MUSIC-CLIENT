@@ -2,7 +2,13 @@ package Logic;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.nio.file.Paths;
 
+import org.omg.CORBA.ORB;
+import org.omg.CosNaming.NamingContextExt;
+import org.omg.CosNaming.NamingContextExtHelper;
+
+import SendFileServer.SendFile;
 import interfaz.PanelPrincipal;
 import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.Player;
@@ -13,13 +19,19 @@ public class Reproductor {
 	private Thread hilo;
 	private Thread hiloGui;
 	private String path;
+	private String ID;
 	private int suspend = 1;
 	private boolean complete = false;
 	private Reproductor me = this;
 	
-	public Reproductor(PanelPrincipal gui, String path) {
+	private String currentDirectory = Paths.get(".").toAbsolutePath().normalize().toString();
+	private SendFile sendFileImpl;
+	
+	public Reproductor(PanelPrincipal gui, String ID, SendFile sendFileImpl) {
+		this.sendFileImpl = sendFileImpl;
 		this.gui = gui;
-		this.path = path;
+		this.ID = ID;
+		this.path = currentDirectory+"\\cancionesDown\\"+ID+".mp3";
 		this.hilo = init();
 	}
 	
@@ -29,6 +41,7 @@ public class Reproductor {
 			public void run() {
 				Player apl;
 				try {
+					download(ID);
 					apl = new Player(new FileInputStream(path));
 					startTimeLine(gui.getCancion().getDuracion());
 					apl.play();
@@ -116,4 +129,12 @@ public class Reproductor {
 		
 		hiloGui.start();
 	}
+	
+	private void download(String ID)
+	  {
+		  FileStreamer MP3 = new FileStreamer();
+		  MP3.setBuffer(this.sendFileImpl.download(ID));
+		  MP3.saveFile(currentDirectory+"\\cancionesDown\\"+ID+".mp3"); 
+		  System.out.println("             -> Archivo descargado correctamente!");
+	  }
 }

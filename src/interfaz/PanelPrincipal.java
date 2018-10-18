@@ -7,6 +7,7 @@ import javax.swing.JSlider;
 import javax.swing.SpringLayout;
 
 import Logic.Reproductor;
+import SendFileServer.SendFile;
 import SqlMusica.Cancion;
 
 import javax.swing.JLabel;
@@ -31,6 +32,8 @@ public class PanelPrincipal extends JPanel {
 	public Reproductor rep;
 	private PanelPrincipal me = this;
 	
+	private SendFile sendFileImpl;
+	
 	public Cancion getCancion() {
 		return cancion;
 	}
@@ -50,10 +53,10 @@ public class PanelPrincipal extends JPanel {
 	public void play() {
 		if (rep != null) {
 			if (rep.getComplete()) {
-				rep = new Reproductor(me, "C:/Users/betom/music/"+cancion.getId()+".mp3");
+				rep = new Reproductor(me, cancion.getId(), this.sendFileImpl);
 			}
 		} else {
-			rep = new Reproductor(me, "C:/Users/betom/music/"+cancion.getId()+".mp3");
+			rep = new Reproductor(me, cancion.getId(), this.sendFileImpl);
 		}
 		playList.list.setSelectedIndex(index);
 		rep.play();
@@ -61,8 +64,8 @@ public class PanelPrincipal extends JPanel {
 	/**
 	 * Create the panel.
 	 */
-	public PanelPrincipal() {
-		
+	public PanelPrincipal(SendFile sendFileImpl) {
+		this.sendFileImpl = sendFileImpl;
 		JButton btn_Next = new JButton(">>");
 		btn_Next.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

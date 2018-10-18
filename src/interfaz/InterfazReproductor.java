@@ -10,7 +10,13 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.omg.CORBA.ORB;
+import org.omg.CosNaming.NamingContextExt;
+import org.omg.CosNaming.NamingContextExtHelper;
+
 import Logic.Reproductor;
+import SendFileServer.SendFile;
+import SendFileServer.SendFileHelper;
 import SqlMusica.Cancion;
 
 import javax.swing.SpringLayout;
@@ -37,21 +43,41 @@ import java.awt.GridBagLayout;
 import java.awt.Button;
 
 public class InterfazReproductor extends JFrame {
-
+	static SendFile sendFileImpl;
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					InterfazReproductor frame = new InterfazReproductor();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
+		try{
+	        // create and initialize the ORB
+	        ORB orb = ORB.init(args, null);
+
+	        // get the root naming context
+	        org.omg.CORBA.Object objRef = 
+	            orb.resolve_initial_references("NameService");
+	        // Use NamingContextExt instead of NamingContext. This is 
+	        // part of the Interoperable naming Service.  
+	        NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
+	 
+	        // resolve the Object Reference in Naming
+	        String name = "SendFile";
+	        sendFileImpl = SendFileHelper.narrow(ncRef.resolve_str(name));
+	        
+	        EventQueue.invokeLater(new Runnable() {
+				public void run() {
+					try {
+						InterfazReproductor frame = new InterfazReproductor();
+						frame.setVisible(true);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
-			}
-		});
+			});
+
+	        } catch (Exception e) {
+	          System.out.println("ERROR : " + e) ;
+	          e.printStackTrace(System.out);
+	        }
 	}
 
 	/**
@@ -64,7 +90,7 @@ public class InterfazReproductor extends JFrame {
 		setBounds(100, 100, 645, 319);
 		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.X_AXIS));
 		
-		PanelPrincipal panelPrincipal = new PanelPrincipal();
+		PanelPrincipal panelPrincipal = new PanelPrincipal(sendFileImpl);
 		panelPrincipal.setBounds(179, 11, 450, 134);
 		
 		PlayList playList = new PlayList();
